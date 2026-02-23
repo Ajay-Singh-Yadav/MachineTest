@@ -1,29 +1,53 @@
 {
   "expo": {
-    "name": "react-native-image-app",
-    "slug": "react-native-image-app",
+    "name": "Machine Test",
+    "slug": "machine-test",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.xicom.machinetest",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to upload images.",
+        "NSCameraUsageDescription": "This app needs access to your camera to take photos."
+      }
     },
     "android": {
+      "package": "com.xicom.machinetest",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "permissions": [
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "CAMERA"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "platforms": ["ios", "android", "web"],
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app needs access to your photos to upload images."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id-will-be-added-here"
+      }
     }
   }
 }
