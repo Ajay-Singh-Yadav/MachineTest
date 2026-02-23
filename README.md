@@ -14,16 +14,19 @@ A React Native application built with Expo that displays a gallery of images wit
 ## Installation
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Start the development server:
+
 ```bash
 npm start
 ```
 
 3. Run on your device:
+
 - Scan the QR code with Expo Go app (iOS/Android)
 - Press `a` for Android emulator
 - Press `i` for iOS simulator (macOS only)
@@ -44,11 +47,6 @@ src/
 └── utils/
     └── validation.js     # Form validation utilities
 ```
-
-## API Endpoints
-
-- GET Images: `http://dev3.xicomtechnologies.com/xttest/getdata.php`
-- POST User Data: `http://dev3.xicomtechnologies.com/xttest/savedata.php`
 
 ## Best Practices Implemented
 
