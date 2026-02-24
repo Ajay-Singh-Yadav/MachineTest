@@ -157,15 +157,7 @@ const ImageListScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <Animated.View style={[styles.fullScreen, { opacity: fadeAnim, backgroundColor: colors.background }]}>
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
-        <View style={[styles.header, { backgroundColor: colors.primary }]}>
-          <Text style={styles.headerTitle}>{strings.machineTest}</Text>
-          <TouchableOpacity 
-            style={styles.testButton}
-            onPress={() => navigation.navigate('ApiTest' as any)}
-          >
-            <Text style={styles.testButtonText}>Test API</Text>
-          </TouchableOpacity>
-        </View>
+  
         <FlatList
           data={images}
           keyExtractor={keyExtractor}

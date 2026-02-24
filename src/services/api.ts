@@ -2,7 +2,10 @@ import axios from 'axios';
 import { ImageResponse, UserData, ImageItem } from '../types';
 import { Platform } from 'react-native';
 
-const BASE_URL = 'https://dev3.xicomtechnologies.com/xttest';
+// Use proxy server for web to avoid CORS issues
+const BASE_URL = Platform.OS === 'web' 
+  ? 'http://localhost:3001/api' 
+  : 'https://dev3.xicomtechnologies.com/xttest';
 
 export const getImages = async (offset: number = 0): Promise<ImageResponse> => {
   try {
@@ -21,7 +24,7 @@ export const getImages = async (offset: number = 0): Promise<ImageResponse> => {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-      timeout: 10000, // 10 second timeout
+      timeout: 15000, // 15 second timeout for better reliability
     });
 
     console.log('API Response Status:', response.status);

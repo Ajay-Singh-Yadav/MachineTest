@@ -51,14 +51,15 @@ export default function App() {
               animation: 'slide_from_right',
               animationDuration: 300,
             }}
+            initialRouteName="ImageList"
           >
-            <Stack.Screen 
-              name="ApiTest" 
-              component={ApiTest}
-            />
             <Stack.Screen 
               name="ImageList" 
               component={ImageListScreen}
+            />
+            <Stack.Screen 
+              name="ApiTest" 
+              component={ApiTest}
             />
             <Stack.Screen 
               name="ImageDetail" 
