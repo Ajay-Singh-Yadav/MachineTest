@@ -1,145 +1,71 @@
 import axios from 'axios';
 import { ImageResponse, UserData, ImageItem } from '../types';
+import { Platform } from 'react-native';
 
-const BASE_URL = 'http://dev3.xicomtechnologies.com/xttest';
-const USE_DUMMY_DATA = true; // Set to false to use real API
-
-// Dummy data for testing
-const DUMMY_IMAGES: ImageItem[] = [
-  {
-    id: '1',
-    image_url: 'https://picsum.photos/400/600',
-    url: 'https://picsum.photos/400/600',
-    width: 400,
-    height: 600,
-  },
-  {
-    id: '2',
-    image_url: 'https://picsum.photos/800/400',
-    url: 'https://picsum.photos/800/400',
-    width: 800,
-    height: 400,
-  },
-  {
-    id: '3',
-    image_url: 'https://picsum.photos/600/800',
-    url: 'https://picsum.photos/600/800',
-    width: 600,
-    height: 800,
-  },
-  {
-    id: '4',
-    image_url: 'https://picsum.photos/500/500',
-    url: 'https://picsum.photos/500/500',
-    width: 500,
-    height: 500,
-  },
-  {
-    id: '5',
-    image_url: 'https://picsum.photos/700/400',
-    url: 'https://picsum.photos/700/400',
-    width: 700,
-    height: 400,
-  },
-  {
-    id: '6',
-    image_url: 'https://picsum.photos/400/700',
-    url: 'https://picsum.photos/400/700',
-    width: 400,
-    height: 700,
-  },
-  {
-    id: '7',
-    image_url: 'https://picsum.photos/900/500',
-    url: 'https://picsum.photos/900/500',
-    width: 900,
-    height: 500,
-  },
-  {
-    id: '8',
-    image_url: 'https://picsum.photos/500/900',
-    url: 'https://picsum.photos/500/900',
-    width: 500,
-    height: 900,
-  },
-];
+const BASE_URL = 'https://dev3.xicomtechnologies.com/xttest';
 
 export const getImages = async (offset: number = 0): Promise<ImageResponse> => {
-  if (USE_DUMMY_DATA) {
-   
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const itemsPerPage = 4;
-    const start = offset;
-    const end = start + itemsPerPage;
-    
-    // Generate unique images by adding offset to IDs to avoid duplicate keys
-    const images = DUMMY_IMAGES.slice(start % DUMMY_IMAGES.length, (start % DUMMY_IMAGES.length) + itemsPerPage)
-      .map((img, idx) => ({
-        ...img,
-        id: `${Math.floor(start / DUMMY_IMAGES.length)}-${img.id}-${start + idx}`,
-      }));
-    
-    // If we need more images, wrap around
-    if (images.length < itemsPerPage && start < 20) {
-      const remaining = itemsPerPage - images.length;
-      const wrappedImages = DUMMY_IMAGES.slice(0, remaining).map((img, idx) => ({
-        ...img,
-        id: `${Math.floor((start + images.length) / DUMMY_IMAGES.length)}-${img.id}-${start + images.length + idx}`,
-      }));
-      images.push(...wrappedImages);
-    }
-    
-    return {
-      images,
-      total: DUMMY_IMAGES.length,
-    };
-  }
-
   try {
+    console.log('Fetching images with offset:', offset, 'Platform:', Platform.OS);
+    
+    // Use FormData for all platforms - the API expects form-data
     const formData = new FormData();
     formData.append('user_id', '108');
     formData.append('offset', offset.toString());
     formData.append('type', 'popular');
 
+    console.log('Sending request to:', `${BASE_URL}/getdata.php`);
+    console.log('FormData created with user_id=108, offset=' + offset + ', type=popular');
+
     const response = await axios.post(`${BASE_URL}/getdata.php`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-      transformResponse: [(data) => {
-        try {
-          return JSON.parse(data);
-        } catch (e) {
-          return data;
-        }
-      }],
+      timeout: 10000, // 10 second timeout
     });
 
-   
-    if (response.data && response.data.images) {
-      response.data.images = response.data.images.map(img => ({
-        ...img,
-        width: parseFloat(img.width) || 1,
-        height: parseFloat(img.height) || 1,
+    console.log('API Response Status:', response.status);
+    console.log('API Response Data:', response.data);
+
+    // Handle the actual API response structure
+    if (response.data && response.data.status === 'success' && response.data.images) {
+      const processedImages = response.data.images.map((img: any) => ({
+        id: img.id,
+        xt_image: img.xt_image,
+        image_url: img.xt_image, // Map xt_image to image_url for compatibility
+        url: img.xt_image, // Map xt_image to url for compatibility
+        width: 300, // Default width for shoe images
+        height: 400, // Default height for shoe images (3:4 ratio)
       }));
+
+      console.log('Processed images:', processedImages.length);
+      return {
+        images: processedImages,
+        total: processedImages.length,
+      };
     }
 
-    return response.data;
+    console.log('No valid images in response');
+    return { images: [], total: 0 };
   } catch (error) {
     console.error('Error fetching images:', error);
+    if (axios.isAxiosError(error)) {
+      console.error('Axios error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers,
+      });
+    }
     throw error;
   }
 };
 
 export const saveUserData = async (userData: UserData): Promise<any> => {
-  if (USE_DUMMY_DATA) {
-
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log('Dummy save:', userData);
-    return { success: true, message: 'Data saved successfully' };
-  }
-
   try {
+    console.log('Saving user data:', userData);
+    
     const formData = new FormData();
     formData.append('first_name', userData.firstName);
     formData.append('last_name', userData.lastName);
@@ -147,27 +73,48 @@ export const saveUserData = async (userData: UserData): Promise<any> => {
     formData.append('phone', userData.phone);
 
     if (userData.image) {
-      const imageUri = userData.image.uri;
-      const filename = imageUri.split('/').pop();
-      const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : 'image/jpeg';
+      if (Platform.OS === 'web') {
+        // For web, we need to fetch the image and create a blob
+        try {
+          const imageResponse = await fetch(userData.image.uri);
+          const blob = await imageResponse.blob();
+          formData.append('user_image', blob, userData.image.name || 'image.jpg');
+        } catch (imageError) {
+          console.warn('Could not fetch image for web upload:', imageError);
+        }
+      } else {
+        // For mobile, use the standard format
+        const imageUri = userData.image.uri;
+        const filename = imageUri.split('/').pop() || 'image.jpg';
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : 'image/jpeg';
 
-      formData.append('user_image', {
-        uri: imageUri,
-        name: filename,
-        type,
-      });
+        formData.append('user_image', {
+          uri: imageUri,
+          name: filename,
+          type,
+        } as any);
+      }
     }
 
     const response = await axios.post(`${BASE_URL}/savedata.php`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 10000,
     });
 
+    console.log('Save response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error saving user data:', error);
+    if (axios.isAxiosError(error)) {
+      console.error('Save error details:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+    }
     throw error;
   }
 };

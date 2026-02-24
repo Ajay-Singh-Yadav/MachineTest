@@ -17,7 +17,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../../App';
-import * as ImagePicker from 'expo-image-picker';
 import InputField from '../components/InputField';
 import AnimatedAlert from '../components/AnimatedAlert';
 import { validateForm } from '../utils/validation';
@@ -46,37 +45,12 @@ const ImageDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     phone: '',
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
-  const [selectedImages, setSelectedImages] = useState<ImagePicker.ImagePickerAsset[]>([]);
   const [loading, setLoading] = useState(false);
 
   const handleInputChange = (field: keyof UserFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: '' }));
-    }
-  };
-
-  const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (status !== 'granted') {
-      showAlert({
-        title: strings.permissionRequired,
-        message: strings.permissionMessage,
-        type: 'error',
-      });
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
-      quality: 0.8,
-      selectionLimit: 10,
-    });
-
-    if (!result.canceled && result.assets) {
-      setSelectedImages(result.assets);
     }
   };
 
@@ -88,20 +62,15 @@ const ImageDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       return;
     }
 
-    if (selectedImages.length === 0) {
-      showAlert({
-        title: strings.imageRequired,
-        message: strings.imageRequiredMessage,
-        type: 'error',
-      });
-      return;
-    }
-
     try {
       setLoading(true);
       const userData = {
         ...formData,
-        image: selectedImages[0], // Send first image for now, or modify API to handle multiple
+        image: {
+          uri: image.xt_image || image.image_url || image.url,
+          name: `image_${image.id}.jpg`,
+          type: 'image/jpeg',
+        },
       };
 
       await saveUserData(userData);
@@ -126,7 +95,7 @@ const ImageDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const aspectRatio = image.width && image.height
     ? image.width / image.height
-    : 1;
+    : 0.75; // 3:4 ratio for shoe images
   const screenWidth = Dimensions.get('window').width;
   const calculatedHeight = screenWidth / aspectRatio;
   const maxImageHeight = isSmallDevice ? 250 : 350;
@@ -156,7 +125,7 @@ const ImageDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           contentContainerStyle={{ backgroundColor: colors.card }}
         >
           <Image
-            source={{ uri: image.image_url || image.url }}
+            source={{ uri: image.xt_image || image.image_url || image.url }}
             style={[styles.headerImage, { height: imageHeight }]}
             resizeMode="cover"
           />
@@ -200,34 +169,6 @@ const ImageDetailScreen: React.FC<Props> = ({ route, navigation }) => {
               placeholder={strings.enterPhone}
               keyboardType="phone-pad"
             />
-
-            <TouchableOpacity style={[styles.imagePickerButton, { backgroundColor: colors.secondaryBackground, borderColor: colors.border }]} onPress={pickImage}>
-              <Text style={[styles.imagePickerText, { color: colors.primary }]}>
-                {selectedImages.length > 0 ? strings.imagesSelected(selectedImages.length) : strings.selectImages}
-              </Text>
-            </TouchableOpacity>
-
-            {selectedImages.length > 0 && (
-              <View style={styles.selectedImagesContainer}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  {selectedImages.map((img, index) => (
-                    <View key={index} style={styles.imageWrapper}>
-                      <Image
-                        source={{ uri: img.uri }}
-                        style={styles.selectedImage}
-                        resizeMode="cover"
-                      />
-                      <TouchableOpacity
-                        style={styles.removeButton}
-                        onPress={() => setSelectedImages(selectedImages.filter((_, i) => i !== index))}
-                      >
-                        <Text style={styles.removeButtonText}>×</Text>
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                </ScrollView>
-              </View>
-            )}
 
             <TouchableOpacity
               style={[styles.submitButton, { backgroundColor: colors.primary }, loading && styles.submitButtonDisabled]}
@@ -301,46 +242,6 @@ const styles = StyleSheet.create({
     fontSize: isTablet ? fontSize.xxxl : fontSize.xxl,
     fontWeight: 'bold',
     marginBottom: isTablet ? spacing.xxl : spacing.xl,
-  },
-  imagePickerButton: {
-    padding: isTablet ? spacing.lg : spacing.md,
-    borderRadius: borderRadius.sm,
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-    borderWidth: 1,
-  },
-  imagePickerText: {
-    fontSize: isTablet ? fontSize.lg : fontSize.md,
-    fontWeight: '600',
-  },
-  selectedImage: {
-    width: isTablet ? imageSize.large : imageSize.medium,
-    height: isTablet ? imageSize.large : imageSize.medium,
-    borderRadius: borderRadius.sm,
-    marginRight: spacing.md,
-  },
-  selectedImagesContainer: {
-    marginBottom: spacing.lg,
-  },
-  imageWrapper: {
-    position: 'relative',
-  },
-  removeButton: {
-    position: 'absolute',
-    top: spacing.xs,
-    right: spacing.lg,
-    backgroundColor: 'rgba(255, 59, 48, 0.9)',
-    width: spacing.xxl,
-    height: spacing.xxl,
-    borderRadius: borderRadius.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  removeButtonText: {
-    color: '#fff',
-    fontSize: fontSize.lg,
-    fontWeight: 'bold',
-    lineHeight: spacing.xl,
   },
   submitButton: {
     padding: isTablet ? fontSize.lg : spacing.lg,

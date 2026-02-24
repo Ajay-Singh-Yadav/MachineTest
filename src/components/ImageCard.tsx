@@ -17,7 +17,8 @@ const ImageCard: React.FC<ImageCardProps> = React.memo(({ item, onPress }) => {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   
-  const aspectRatio = item.width && item.height ? item.width / item.height : 1;
+  // Use a reasonable default aspect ratio for shoe images
+  const aspectRatio = item.width && item.height ? item.width / item.height : 0.75; // 3:4 ratio for shoes
   const imageHeight = CARD_WIDTH / aspectRatio;
 
   return (
@@ -41,7 +42,7 @@ const ImageCard: React.FC<ImageCardProps> = React.memo(({ item, onPress }) => {
       activeOpacity={0.8}
     >
       <Image
-        source={{ uri: item.image_url || item.url }}
+        source={{ uri: item.xt_image || item.image_url || item.url }}
         style={[styles.image, { height: imageHeight }]}
         resizeMode="cover"
       />

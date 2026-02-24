@@ -1,9 +1,10 @@
 export interface ImageItem {
   id: string;
-  image_url: string;
-  url: string;
-  width: number;
-  height: number;
+  xt_image: string;
+  image_url?: string;
+  url?: string;
+  width?: number;
+  height?: number;
 }
 
 export interface ImageResponse {

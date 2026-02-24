@@ -67,7 +67,9 @@ const ImageListScreen: React.FC<Props> = ({ navigation }) => {
       }
 
       const currentOffset = isLoadMore ? offset : 0;
+      console.log('Loading images with offset:', currentOffset); // Debug log
       const response = await getImages(currentOffset);
+      console.log('Received response:', response); // Debug log
 
       if (response && response.images && Array.isArray(response.images)) {
         const newImages = response.images;
@@ -81,6 +83,7 @@ const ImageListScreen: React.FC<Props> = ({ navigation }) => {
         setOffset(currentOffset + newImages.length);
         setHasMore(newImages.length > 0);
       } else {
+        console.log('No images in response or invalid response structure');
         setHasMore(false);
       }
     } catch (error) {
@@ -156,6 +159,12 @@ const ImageListScreen: React.FC<Props> = ({ navigation }) => {
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
         <View style={[styles.header, { backgroundColor: colors.primary }]}>
           <Text style={styles.headerTitle}>{strings.machineTest}</Text>
+          <TouchableOpacity 
+            style={styles.testButton}
+            onPress={() => navigation.navigate('ApiTest' as any)}
+          >
+            <Text style={styles.testButtonText}>Test API</Text>
+          </TouchableOpacity>
         </View>
         <FlatList
           data={images}
@@ -241,6 +250,20 @@ const styles = StyleSheet.create({
   lottie: {
     width: 200,
     height: 200,
+  },
+  testButton: {
+    position: 'absolute',
+    right: spacing.lg,
+    top: '50%',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.sm,
+  },
+  testButtonText: {
+    color: 'white',
+    fontSize: fontSize.sm,
+    fontWeight: 'bold',
   },
 });
 

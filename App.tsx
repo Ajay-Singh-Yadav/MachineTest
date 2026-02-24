@@ -7,12 +7,14 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import ImageListScreen from './src/screens/ImageListScreen';
 import ImageDetailScreen from './src/screens/ImageDetailScreen';
 import SplashScreen from './src/screens/SplashScreen';
+import ApiTest from './src/components/ApiTest';
 import { ImageItem } from './src/types';
 import { Colors } from './src/theme/colors';
 
 export type RootStackParamList = {
   ImageList: undefined;
   ImageDetail: { image: ImageItem };
+  ApiTest: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -50,6 +52,10 @@ export default function App() {
               animationDuration: 300,
             }}
           >
+            <Stack.Screen 
+              name="ApiTest" 
+              component={ApiTest}
+            />
             <Stack.Screen 
               name="ImageList" 
               component={ImageListScreen}
