@@ -59,6 +59,11 @@ const ImageDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
     if (!validation.isValid) {
       setErrors(validation.errors);
+      showAlert({
+        title: 'Validation Error',
+        message: 'Please fix the errors in the form before submitting.',
+        type: 'error',
+      });
       return;
     }
 
@@ -67,27 +72,44 @@ const ImageDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       const userData = {
         ...formData,
         image: {
-          uri: image.xt_image || image.image_url || image.url,
+          uri: image.xt_image || image.image_url || image.url || '',
           name: `image_${image.id}.jpg`,
           type: 'image/jpeg',
         },
       };
 
-      await saveUserData(userData);
+      console.log('Submitting user data with selected API image...');
+      const result = await saveUserData(userData);
 
       showAlert({
-        title: strings.success,
-        message: strings.successMessage,
+        title: 'Success!',
+        message: 'Your details have been saved successfully with the selected image.',
         type: 'success',
-        onConfirm: () => navigation.goBack(),
+        onConfirm: () => {
+          // Clear form data on success
+          setFormData({
+            firstName: '',
+            lastName: '',
+            email: '',
+            phone: '',
+          });
+          setErrors({});
+          navigation.goBack();
+        },
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Submit error:', error);
+      
+      let errorMessage = 'Failed to save your details. Please try again.';
+      if (error.message) {
+        errorMessage = error.message;
+      }
+
       showAlert({
-        title: strings.error,
-        message: strings.errorMessage,
+        title: 'Error',
+        message: errorMessage,
         type: 'error',
       });
-      console.error('Submit error:', error);
     } finally {
       setLoading(false);
     }

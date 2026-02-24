@@ -75,15 +75,19 @@ export const saveUserData = async (userData: UserData): Promise<any> => {
     formData.append('email', userData.email);
     formData.append('phone', userData.phone);
 
+    // Ensure image is included in multipart format
     if (userData.image) {
       if (Platform.OS === 'web') {
         // For web, we need to fetch the image and create a blob
         try {
+          console.log('Fetching image for web upload:', userData.image.uri);
           const imageResponse = await fetch(userData.image.uri);
           const blob = await imageResponse.blob();
           formData.append('user_image', blob, userData.image.name || 'image.jpg');
+          console.log('Image blob created for web upload');
         } catch (imageError) {
-          console.warn('Could not fetch image for web upload:', imageError);
+          console.error('Could not fetch image for web upload:', imageError);
+          throw new Error('Failed to process image for upload');
         }
       } else {
         // For mobile, use the standard format
@@ -92,23 +96,38 @@ export const saveUserData = async (userData: UserData): Promise<any> => {
         const match = /\.(\w+)$/.exec(filename);
         const type = match ? `image/${match[1]}` : 'image/jpeg';
 
+        console.log('Adding image to form data:', { uri: imageUri, name: filename, type });
         formData.append('user_image', {
           uri: imageUri,
           name: filename,
           type,
         } as any);
       }
+    } else {
+      throw new Error('No image selected');
     }
 
+    console.log('Sending multipart form data to server...');
     const response = await axios.post(`${BASE_URL}/savedata.php`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-      timeout: 10000,
+      timeout: 15000, // Increased timeout for image upload
     });
 
-    console.log('Save response:', response.data);
-    return response.data;
+    console.log('Save response status:', response.status);
+    console.log('Save response data:', response.data);
+
+    // Check for successful response
+    if (response.status === 200) {
+      return {
+        success: true,
+        message: 'Data saved successfully',
+        data: response.data
+      };
+    } else {
+      throw new Error(`Server responded with status: ${response.status}`);
+    }
   } catch (error) {
     console.error('Error saving user data:', error);
     if (axios.isAxiosError(error)) {
@@ -117,6 +136,14 @@ export const saveUserData = async (userData: UserData): Promise<any> => {
         status: error.response?.status,
         data: error.response?.data,
       });
+      
+      if (error.response?.status === 400) {
+        throw new Error('Invalid data provided');
+      } else if (error.response?.status === 500) {
+        throw new Error('Server error occurred');
+      } else if (error.code === 'ECONNABORTED') {
+        throw new Error('Request timeout - please try again');
+      }
     }
     throw error;
   }

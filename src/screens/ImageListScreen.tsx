@@ -157,7 +157,10 @@ const ImageListScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <Animated.View style={[styles.fullScreen, { opacity: fadeAnim, backgroundColor: colors.background }]}>
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
-  
+        <View style={[styles.header, { backgroundColor: colors.primary }]}>
+          <Text style={styles.headerTitle}>Machine Test</Text>
+        </View>
+        
         <FlatList
           data={images}
           keyExtractor={keyExtractor}
