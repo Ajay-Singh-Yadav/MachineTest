@@ -1,30 +1,25 @@
 import axios from 'axios';
 import { ImageResponse, UserData, ImageItem } from '../types';
-import { Platform } from 'react-native';
 
-// Use proxy server for web to avoid CORS issues
-const BASE_URL = Platform.OS === 'web' 
-  ? 'http://localhost:3001/api' 
-  : 'https://dev3.xicomtechnologies.com/xttest';
+const BASE_URL = 'https://dev3.xicomtechnologies.com/xttest';
 
 export const getImages = async (offset: number = 0): Promise<ImageResponse> => {
   try {
-    console.log('Fetching images with offset:', offset, 'Platform:', Platform.OS);
+    console.log('Fetching images with offset:', offset);
     
-    // Use FormData for all platforms - the API expects form-data
+    // Use FormData for the API request
     const formData = new FormData();
     formData.append('user_id', '108');
     formData.append('offset', offset.toString());
     formData.append('type', 'popular');
 
     console.log('Sending request to:', `${BASE_URL}/getdata.php`);
-    console.log('FormData created with user_id=108, offset=' + offset + ', type=popular');
 
     const response = await axios.post(`${BASE_URL}/getdata.php`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-      timeout: 15000, // 15 second timeout for better reliability
+      timeout: 15000,
     });
 
     console.log('API Response Status:', response.status);
@@ -35,10 +30,10 @@ export const getImages = async (offset: number = 0): Promise<ImageResponse> => {
       const processedImages = response.data.images.map((img: any) => ({
         id: img.id,
         xt_image: img.xt_image,
-        image_url: img.xt_image, // Map xt_image to image_url for compatibility
-        url: img.xt_image, // Map xt_image to url for compatibility
-        width: 300, // Default width for shoe images
-        height: 400, // Default height for shoe images (3:4 ratio)
+        image_url: img.xt_image,
+        url: img.xt_image,
+        width: 300,
+        height: 400,
       }));
 
       console.log('Processed images:', processedImages.length);
@@ -58,7 +53,6 @@ export const getImages = async (offset: number = 0): Promise<ImageResponse> => {
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data,
-        headers: error.response?.headers,
       });
     }
     throw error;
@@ -75,34 +69,19 @@ export const saveUserData = async (userData: UserData): Promise<any> => {
     formData.append('email', userData.email);
     formData.append('phone', userData.phone);
 
-    // Ensure image is included in multipart format
+    // Add image to multipart form data
     if (userData.image) {
-      if (Platform.OS === 'web') {
-        // For web, we need to fetch the image and create a blob
-        try {
-          console.log('Fetching image for web upload:', userData.image.uri);
-          const imageResponse = await fetch(userData.image.uri);
-          const blob = await imageResponse.blob();
-          formData.append('user_image', blob, userData.image.name || 'image.jpg');
-          console.log('Image blob created for web upload');
-        } catch (imageError) {
-          console.error('Could not fetch image for web upload:', imageError);
-          throw new Error('Failed to process image for upload');
-        }
-      } else {
-        // For mobile, use the standard format
-        const imageUri = userData.image.uri;
-        const filename = imageUri.split('/').pop() || 'image.jpg';
-        const match = /\.(\w+)$/.exec(filename);
-        const type = match ? `image/${match[1]}` : 'image/jpeg';
+      const imageUri = userData.image.uri;
+      const filename = imageUri.split('/').pop() || 'image.jpg';
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : 'image/jpeg';
 
-        console.log('Adding image to form data:', { uri: imageUri, name: filename, type });
-        formData.append('user_image', {
-          uri: imageUri,
-          name: filename,
-          type,
-        } as any);
-      }
+      console.log('Adding image to form data:', { uri: imageUri, name: filename, type });
+      formData.append('user_image', {
+        uri: imageUri,
+        name: filename,
+        type,
+      } as any);
     } else {
       throw new Error('No image selected');
     }
@@ -112,7 +91,7 @@ export const saveUserData = async (userData: UserData): Promise<any> => {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-      timeout: 15000, // Increased timeout for image upload
+      timeout: 15000,
     });
 
     console.log('Save response status:', response.status);

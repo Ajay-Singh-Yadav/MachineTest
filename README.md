@@ -11,7 +11,7 @@ A React Native app built with Expo that fetches images from an API, displays the
   - GET images from `https://dev3.xicomtechnologies.com/xttest/getdata.php`
   - POST user data to `https://dev3.xicomtechnologies.com/xttest/savedata.php`
 - **Form Validation**: Proper validation for all form fields
-- **Cross-platform**: Works on iOS, Android, and Web
+- **Mobile-First**: Optimized for iOS and Android
 
 ## API Endpoints
 
@@ -44,23 +44,15 @@ A React Native app built with Expo that fetches images from an API, displays the
    npm install
    ```
 
-2. **For Web development** (to handle CORS):
+2. **Start the app**:
    ```bash
-   # Install proxy server dependencies
-   npm install express http-proxy-middleware cors
-   
-   # Start proxy server (in separate terminal)
-   node proxy-server.js
+   npm start
    ```
 
-3. **Start the app**:
-   ```bash
-   # For mobile development
-   npm start
-   
-   # For web development (after starting proxy server)
-   npm run web
-   ```
+3. **Run on device**:
+   - Scan QR code with Expo Go app
+   - Press `a` for Android emulator
+   - Press `i` for iOS simulator
 
 ## Project Structure
 
@@ -92,8 +84,9 @@ src/
 ✅ API integration for both GET and POST requests  
 ✅ Image selection from API (not gallery)  
 ✅ Multipart form data submission  
-✅ Cross-platform compatibility (iOS, Android, Web)  
+✅ iOS and Android compatibility  
 ✅ Proper error handling and loading states  
+✅ Dark mode support  
 
 ## Development Notes
 
@@ -103,3 +96,4 @@ src/
 - Axios for HTTP requests
 - Form validation with custom validation utilities
 - Responsive design with theme system
+- Optimized for mobile devices only
